@@ -1,5 +1,6 @@
 import mongoengine as me
 from decimal import  Decimal
+from datetime import datetime
 
 me.connect('webshopdb')
 
@@ -22,10 +23,6 @@ class Category(me.Document):
 
         self.subcategories.append(subcategory)
         self.save()
-
-
-
-    #add subcategory
 
 class Parameter(me.EmbeddedDocument):
     height = me.FloatField()
@@ -52,3 +49,13 @@ class Product(me.Document):
         return cls.objects(discount__ne=0)
 
 
+class New(me.Document):
+    title = me.StringField(min_length=2, max_length=512, required=True)
+    text = me.StringField(min_length=2, max_length=10240, required=True)
+    date = me.DateTimeField(default=datetime.now())
+
+    @classmethod
+    def get_latest_news(cls, count_item=3):
+        count_item = cls.objects.count()
+        start_nom = count_item-count_item if count_item > count_item else 0
+        return cls.objects[start_nom:]
