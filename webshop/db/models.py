@@ -59,3 +59,13 @@ class New(me.Document):
         count_item = cls.objects.count()
         start_nom = count_item-count_item if count_item > count_item else 0
         return cls.objects[start_nom:]
+
+class Text(me.Document):
+    GRITINGS = 'greetings'
+    DISCOUNT = 'discount'
+    TITLES_CONSTANT = (
+        (GRITINGS, 'greetings'),
+        (DISCOUNT, 'discount')
+    )
+    title = me.StringField(required=True, choices=TITLES_CONSTANT, unique=True)
+    body = me.StringField(min_length=4, max_length=4096)

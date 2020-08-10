@@ -5,10 +5,11 @@ from telebot.types import (
     InlineKeyboardButton)
 from telebot import TeleBot
 
-from .config import TOKEN
+from .config import TOKEN, DEFAULT_PHOTO_URL
 from db.models import Category, Product, Parameter, New
-from .keyboards import START_KB
-from .texts import TEXTS, SEPARATOR
+from .keyboards import START_KB, ADD_TO_CART
+from .texts import TEXTS
+from .lookups import SEPARATOR
 
 
 bot = TeleBot(TOKEN)
@@ -42,17 +43,27 @@ def list_categories(message):
     bot.send_message(message.chat.id, TEXTS['list_categories'], reply_markup=kb)
 
 @bot.message_handler(content_types=['text'], func=lambda m: m.text == START_KB['list_products_with_discount'])
-def list_products_with_discount(message):
-    buttons = [
-        InlineKeyboardButton(
-            product.title,
-            callback_data=f'{Product.__name__}{SEPARATOR}{str(product.id)}'
-        ) for product in Product.get_products_with_discount()
-    ]
+def get_products_with_discount(message):
+    # buttons = [
+    #     InlineKeyboardButton(
+    #         product.title,
+    #         callback_data=f'{Product.__name__}{SEPARATOR}{str(product.id)}'
+    #     ) for product in Product.get_products_with_discount()
+    # ]
+    #
+    # kb = InlineKeyboardMarkup(row_width=1)
+    # kb.add(*buttons)
+    # bot.send_message(message.chat.id, TEXTS['list_products_with_discount'], reply_markup=kb)
+    discount_products = Product.get_products_with_discount()
+    for product in discount_products:
+        kb=InlineKeyboardMarkup
+        button=InlineKeyboardButton(product.title, callback_data=f'{Product.__name__}{SEPARATOR}{str(product.id)}')
+        kb.add(button)
+        bot.send_photo(message.chat.id, DEFAULT_PHOTO_URL,  product.description)
+        bot.send_message(message.chat.id, TEXTS['list_products_with_discount'], reply_markup=kb)
 
-    kb = InlineKeyboardMarkup(row_width=1)
-    kb.add(*buttons)
-    bot.send_message(message.chat.id, TEXTS['list_products_with_discount'], reply_markup=kb)
+
+    # DEFAULT_PHOTO_URL
 
 
 @bot.message_handler(content_types=['text'], func=lambda m: m.text == START_KB['list_news'])

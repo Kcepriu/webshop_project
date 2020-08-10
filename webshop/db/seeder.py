@@ -1,4 +1,4 @@
-from models import Category, Product, New
+from models import Category, Product, New, Text
 
 class InitialData:
     data_from_init = {'Category' :[
@@ -234,10 +234,24 @@ class InitialData:
         #     category = Category.objects.get(title=product['category'])
         #     product['category']=category
         #     Product.objects.create(**product)
-        for new in self.data_from_init['News']:
-            New.objects.create(**new)
+        # for new in self.data_from_init['News']:
+        #     New.objects.create(**new)
 
         pass
+def seed_textts():
+    greetings = {
+        'title': 'greetings',
+        'body': 'Здравствуй ..'
+    }
+
+    discount = {
+        'title': 'discount',
+        'body': 'Спеши за скидками'
+    }
+
+    Text.objects.create(**greetings)
+    Text.objects.create(**discount)
+
 
 
 
@@ -245,3 +259,5 @@ class InitialData:
 if __name__ == '__main__':
     init_data = InitialData()
     init_data.initial_data()
+
+    seed_textts()

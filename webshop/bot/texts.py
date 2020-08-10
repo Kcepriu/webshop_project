@@ -1,4 +1,3 @@
-SEPARATOR = '_'
 TEXTS = {
     'make_selection': 'Сделайте выбор',
     'list_categories': 'Список категорий',
