@@ -59,8 +59,8 @@ def get_products_with_discount(message):
         kb=InlineKeyboardMarkup
         button=InlineKeyboardButton(product.title, callback_data=f'{Product.__name__}{SEPARATOR}{str(product.id)}')
         kb.add(button)
-        bot.send_photo(message.chat.id, DEFAULT_PHOTO_URL,  product.description)
-        bot.send_message(message.chat.id, TEXTS['list_products_with_discount'], reply_markup=kb)
+        bot.send_photo(message.chat.id, DEFAULT_PHOTO_URL,  product.description, reply_markup=kb)
+        # bot.send_message(message.chat.id, TEXTS['list_products_with_discount'], reply_markup=kb)
 
 
     # DEFAULT_PHOTO_URL
@@ -78,10 +78,10 @@ def clic_category(call):
     category = Category.objects.get(id=call.data.split(SEPARATOR)[1])
     buttons = []
 
-    if not category.parent is None:
+    if category.parent:
         buttons.append(InlineKeyboardButton(
             f'Вернутся {category.parent.title}',
-            callback_data=f'{Category.__name__}{SEPARATOR}{str(category.parent.id)}'))
+            callback_data=f'{Category.__name__}{SEPARATOR}{category.parent.id}'))
 
     for subcategory in category.subcategories:
         buttons.append(InlineKeyboardButton(
