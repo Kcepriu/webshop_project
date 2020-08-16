@@ -26,7 +26,8 @@ class InitialData:
                     'height': 10, 'widht': 11, 'length': 12,'weight': 13
                 },
                 'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-                'category': 'Барное стекло'
+                'category': 'Барное стекло',
+                'url_photo': 'https://forward-ua.com/upload/iblock/3eb/N4231.png'
             },
             {'title': '320267 Стакан высокий',
              'description': '320267 Стакан высокий 470 мл серия "Oriente" цвет голубой',
@@ -40,7 +41,8 @@ class InitialData:
              'is_available': True,
              'price': 110,
              'discount': 5,
-             'category': 'Барное стекло'
+             'category': 'Барное стекло',
+             'url_photo': 'https://forward-ua.com/upload/iblock/158/320267.jpg'
              },
 
             {'title': 'N5082 Бокал для шампанского ',
@@ -55,7 +57,8 @@ class InitialData:
              'is_available': True,
              'price': 150,
              'discount': 10,
-             'category': 'Ресторанное стекло'
+             'category': 'Ресторанное стекло',
+             'url_photo': 'https://forward-ua.com/upload/iblock/84b/N5082.jpg'
              },
             {'title': '335942 Кувшин с крышкой ',
              'description': '335942 Кувшин с крышкой 1,9 л серия "Romantic"',
@@ -69,7 +72,8 @@ class InitialData:
              'is_available': True,
              'price': 10,
              'discount': 0,
-             'category': 'Ресторанное стекло'
+             'category': 'Ресторанное стекло',
+             'url_photo': 'https://forward-ua.com/upload/iblock/6ab/335942.png'
              },
 
             {'title': '10865 Диспенсер',
@@ -78,7 +82,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Чафиндиши и диспенсеры'
+             'category': 'Чафиндиши и диспенсеры',
+             'url_photo': 'https://forward-ua.com/upload/iblock/a0b/10865.png'
              },
 
             {'title': '82328-1 Мармит',
@@ -87,7 +92,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Чафиндиши и диспенсеры'
+             'category': 'Чафиндиши и диспенсеры',
+             'url_photo': 'https://forward-ua.com/upload/iblock/773/82328_1.jpg'
              },
 
             {'title': 'COD. 183 Подставка для торта "Мемфис" (d 30 cm)',
@@ -96,7 +102,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Стойки банкетные'
+             'category': 'Стойки банкетные',
+             'url_photo': 'https://forward-ua.com/upload/iblock/c30/COD.183.jpg'
              },
             {'title': '11623 Стойка банкетная',
              'description': '11623 Дерев''яний ящик-стійка GN 2/4, h-10.5 см',
@@ -104,7 +111,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Стойки банкетные'
+             'category': 'Стойки банкетные',
+             'url_photo': 'https://forward-ua.com/upload/iblock/a46/11623.png'
              },
             {'title': '00969 Подставка из сланца d 28 см',
              'description': '00969 Дошка зі сланцю d 28 см',
@@ -112,7 +120,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Блюда и крышки'
+             'category': 'Блюда и крышки',
+             'url_photo': 'https://forward-ua.com/upload/iblock/ecf/00969.png'
              },
             {'title': '01317 Блюдо прямоугольное 39х26 см',
              'description': '01317 Блюдо прямокутне сервірувальне  39х26 см',
@@ -120,7 +129,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Блюда и крышки'
+             'category': 'Блюда и крышки',
+             'url_photo': 'https://forward-ua.com/upload/iblock/4d3/01317.png'
              },
             {'title': 'PERA & FICO 115 Форма для десерта "PERA & FICO" 115 мл х 5',
              'description': 'PERA & FICO 115   Форма силіконова 60 x 55 h 76 mm + підставка',
@@ -128,7 +138,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Формы для выпечки и десертов'
+             'category': 'Формы для выпечки и десертов',
+             'url_photo': 'https://forward-ua.com/upload/iblock/455/PERA_AND_FICO_115.jpg'
              },
             {'title': 'KIT CANDLE IN THE WIND Набор форм для десерта "Свеча на ветру"',
              'description': 'KIT CANDLE IN THE WIND Набір силіконових форм  250 x 80.5 h 95 mm - 3 шт.',
@@ -136,7 +147,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Формы для выпечки и десертов'
+             'category': 'Формы для выпечки и десертов',
+             'url_photo': 'https://forward-ua.com/upload/iblock/022/KIT_CANDLE_IN_THE_WIND.jpg'
              },
             {'title': '1213 CW Модуль для шоколада "Ежикк" 52x38x23 мм, 12 шт. x24 г',
              'description': '1213 CW Форма для шоколаду "Їжачок" 52x38x23 мм,  12 шт. x24 г',
@@ -144,7 +156,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Формы для шоколада'
+             'category': 'Формы для шоколада',
+             'url_photo': 'https://forward-ua.com/upload/redsign_devfunc_nophoto/79b/no_photo.png'
              },
             {'title': 'CHOCOBIGEV Фонтан для шоколада 3,5 л, d 380, h800',
              'description': 'CHOCOBIGEV Фонтан для шоколаду 3,5 л, d 380, h800',
@@ -152,7 +165,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Формы для шоколада'
+             'category': 'Формы для шоколада',
+             'url_photo': 'https://forward-ua.com/upload/redsign_devfunc_nophoto/79b/no_photo.png'
              },
             {'title': 'SLK806 Форма для декора "бвбочка" 37х30 мм',
              'description': 'SLK806 Форма "метелик" d 40 мм',
@@ -160,7 +174,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Формы для мастики'
+             'category': 'Формы для мастики',
+             'url_photo': 'https://forward-ua.com/upload/redsign_devfunc_nophoto/79b/no_photo.png'
              },
             {'title': '40-W159S Набор штампов для мастики "Пчела" 3 шт. (20x21,',
              'description': '40-W159S Набір штампів "Бджілка" (3 шт.)',
@@ -168,7 +183,8 @@ class InitialData:
                  'height': 10, 'widht': 11, 'length': 12, 'weight': 13
              },
              'in_stock': 50, 'is_available': True, 'price': 100, 'discount': 10,
-             'category': 'Формы для мастики'
+             'category': 'Формы для мастики',
+             'url_photo': 'https://forward-ua.com/upload/redsign_devfunc_nophoto/79b/no_photo.png'
              }],
         'News':[{'title': 'На Киевщине открыли стрельбу возле остановки: пострадал 20-летняя девушка.',
                 'text': '''В городе Обухов (Киевская область) неизвестный водитель на авто открыл стрельбу возле 
@@ -230,10 +246,10 @@ class InitialData:
         #     for subcategories in Category.objects.filter(parent=category):
         #         category.subcategories.append(subcategories)
         #     category.save()
-        # for product in self.data_from_init['Product']:
-        #     category = Category.objects.get(title=product['category'])
-        #     product['category']=category
-        #     Product.objects.create(**product)
+        for product in self.data_from_init['Product']:
+            category = Category.objects.get(title=product['category'])
+            product['category']=category
+            Product.objects.create(**product)
         # for new in self.data_from_init['News']:
         #     New.objects.create(**new)
 
@@ -260,4 +276,4 @@ if __name__ == '__main__':
     init_data = InitialData()
     init_data.initial_data()
 
-    seed_textts()
+    # seed_textts()

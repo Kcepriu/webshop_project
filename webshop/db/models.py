@@ -39,6 +39,7 @@ class Product(me.Document):
     price = me.DecimalField(min_value=1, force_string=True)
     discount = me.IntField(min_value=0, max_value=99,  default=0)
     category = me.ReferenceField(Category)
+    url_photo = me.StringField(min_length=4, max_length=255)
 
     @property
     def actual_price(self):
@@ -69,3 +70,19 @@ class Text(me.Document):
     )
     title = me.StringField(required=True, choices=TITLES_CONSTANT, unique=True)
     body = me.StringField(min_length=4, max_length=4096)
+
+class User(me.Document):
+    user_id = me.IntField(unique=True, required=True)
+    first_name = me.StringField(min_length=2, max_length=255)
+    last_name = me.StringField(min_length=2, max_length=255)
+
+    @staticmethod
+    def get_user(chat):
+        user = User.objects(user_id=chat.id)
+        if not user:
+            user = User.objects.create(user_id=chat.id, first_name=chat.first_name if chat.first_name else '' ,
+                                       last_name=chat.last_name if chat.last_name else '')
+        else:
+            user = user[0]
+
+        return user
