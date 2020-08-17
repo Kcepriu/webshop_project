@@ -1,3 +1,5 @@
+import time
+
 from webshop.bot import bot_instance
 from flask import Flask, abort
 from webshop.bot.config import WEBHOOK_PRIFIX, WEBHOOK_URL
@@ -24,6 +26,8 @@ def webhook():
 if __name__ == '__main__':
     # bot_instance.polling()
     # bot_instance.infinity_polling()
+    bot_instance.remove_webhook()
+    time.sleep(1)
     bot_instance.set_webhook(
         url=WEBHOOK_URL,
         certificate=open('webhook_cer.pem', 'r')
