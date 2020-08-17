@@ -1,6 +1,6 @@
 from webshop.bot import bot_instance
 from flask import Flask, abort
-from .webshop.bot.config import WEBHOOK_PRIFIX, WEBHOOK_URL
+from webshop.bot.config import WEBHOOK_PRIFIX, WEBHOOK_URL
 from flask import request
 from telebot.types import Update
 
