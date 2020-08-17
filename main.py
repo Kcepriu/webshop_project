@@ -15,7 +15,7 @@ def webhook():
         bot_instance.process_new_updates([update])
 
 
-        return
+        return ''
     else:
         abort(403)
 
