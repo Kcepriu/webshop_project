@@ -30,6 +30,6 @@ if __name__ == '__main__':
     time.sleep(1)
     bot_instance.set_webhook(
         url=WEBHOOK_URL,
-        certificate=open('webhook_cer.pem', 'r')
+        certificate=open('webhook_cert.pem, 'r')
     )
     app.run(debug=True)
