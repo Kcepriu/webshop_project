@@ -237,21 +237,21 @@ class InitialData:
 
     def initial_data(self):
 
-        # for category in self.data_from_init['Category']:
-        #     parent = Category.objects.get(title=category[2]) if category[2] else None
-        #     print(category[0],category[2],  parent)
-        #     new_category = Category.objects.create(title=category[0], description=category[1], parent=parent)
-        #
-        # for category in Category.objects.filter(parent=None):
-        #     for subcategories in Category.objects.filter(parent=category):
-        #         category.subcategories.append(subcategories)
-        #     category.save()
+        for category in self.data_from_init['Category']:
+            parent = Category.objects.get(title=category[2]) if category[2] else None
+            print(category[0],category[2],  parent)
+            new_category = Category.objects.create(title=category[0], description=category[1], parent=parent)
+
+        for category in Category.objects.filter(parent=None):
+            for subcategories in Category.objects.filter(parent=category):
+                category.subcategories.append(subcategories)
+            category.save()
         for product in self.data_from_init['Product']:
             category = Category.objects.get(title=product['category'])
             product['category']=category
             Product.objects.create(**product)
-        # for new in self.data_from_init['News']:
-        #     New.objects.create(**new)
+        for new in self.data_from_init['News']:
+            New.objects.create(**new)
 
         pass
 def seed_textts():
@@ -276,4 +276,4 @@ if __name__ == '__main__':
     init_data = InitialData()
     init_data.initial_data()
 
-    # seed_textts()
+    seed_textts()
