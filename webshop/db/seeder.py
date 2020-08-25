@@ -254,26 +254,59 @@ class InitialData:
             New.objects.create(**new)
 
         pass
+
 def seed_textts():
-    greetings = {
+    list_text=[
+    {
         'title': 'greetings',
         'body': 'Здравствуй ..'
-    }
+    },
 
-    discount = {
+    {
         'title': 'discount',
         'body': 'Спеши за скидками'
-    }
+    },
+    {
+        'title': 'add_to_cart',
+        'body': 'Добавить в корзину'
+    },
+        {
+            'title': 'list_categorys',
+            'body': 'Список категорий'
+        }
+        ,
+        {
+            'title': 'price',
+            'body': 'Цена'
+        }
+        ,
+        {
+            'title': 'return_to_the_top_level',
+            'body': 'Вернуться на верхний уровень'
+        }
+        ,
+        {
+            'title': 'start_kb_list_categorys',
+            'body': 'Список категорий'
+        },
+        {
+            'title': 'start_kb_discount',
+            'body': 'Товары со скидкой'
+        },
+        {
+            'title': 'start_kb_news',
+            'body': 'Последние новости'
+        }
+    ]
+    Text.drop_collection()
 
-    Text.objects.create(**greetings)
-    Text.objects.create(**discount)
-
-
+    for item in list_text:
+        Text.objects.create(**item)
 
 
 
 if __name__ == '__main__':
-    init_data = InitialData()
-    init_data.initial_data()
+    # init_data = InitialData()
+    # init_data.initial_data()
 
     seed_textts()

@@ -1,10 +1,14 @@
 from typing import List, Union
 from telebot import TeleBot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import (InlineKeyboardMarkup,
+                           InlineKeyboardButton,
+                           ReplyKeyboardMarkup,
+                           KeyboardButton)
 
-from ..db import Category, Product, New
+from ..db import Category, Product, New, Text
 from .lookups import SEPARATOR
 from .config import NO_PHOTO_URL
+from .keyboards import START_KB
 
 
 class WebShopBot(TeleBot):
@@ -13,7 +17,7 @@ class WebShopBot(TeleBot):
         buttons = []
         for category in categories:
             id_ = category.id if category else None
-            title_ = category.title if category else 'Вернуться на верхний уровеь'
+            title_ = category.title if category else  Text.get_body(Text.RETURN_TO_TOP)
 
             buttons.append(InlineKeyboardButton(
                 title_,
@@ -33,11 +37,12 @@ class WebShopBot(TeleBot):
     def send_products(self, chat_id: int, products: List[Product]):
         for product in products:
             kb = InlineKeyboardMarkup()
-            button = InlineKeyboardButton(text = 'Добавить в корзину',
+            button = InlineKeyboardButton(text = Text.get_body(Text.ADD_TO_CART),
                                           callback_data=f'{Product.__name__}{SEPARATOR}{product.id}')
             kb.add(button)
+            description = f'{product.description}\n{Text.get_body(Text.PRICE)}: {product.actual_price}'
             self.send_photo(chat_id, product.url_photo if product.url_photo else NO_PHOTO_URL,
-                            product.description, reply_markup=kb)
+                            description, reply_markup=kb)
 
     def send_long_message(self, id, message):
         if len(message) > 4096:
@@ -50,6 +55,16 @@ class WebShopBot(TeleBot):
         for item in news:
             self.send_long_message(chat_id, item.title)
             self.send_long_message(chat_id, item.text)
+
+    def update_keyboard_markup(self, user, chat_id):
+        kb = ReplyKeyboardMarkup(resize_keyboard=True)
+        buttons = [KeyboardButton(button) for button in START_KB.values()]
+
+        print(user.get_count_products_active_order())
+
+        kb.add(*buttons)
+        txt = Text.get_body(Text.GRITINGS)
+        self.send_message(chat_id, txt, reply_markup=kb)
 
 
 

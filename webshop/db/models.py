@@ -49,6 +49,103 @@ class Product(me.Document):
     def get_products_with_discount(cls):
         return cls.objects(discount__ne=0)
 
+class Line_Order(me.EmbeddedDocument):
+    product = me.ReferenceField(Product)
+    count = me.IntField(min_value=1)
+    summ = me.DecimalField(min_value=1, force_string=True)
+
+
+class Order(me.EmbeddedDocument):
+    active = me.BooleanField(default=True)
+    products = me.EmbeddedDocumentListField(Line_Order)
+
+class User(me.Document):
+    user_id = me.IntField(unique=True, required=True)
+    first_name = me.StringField(min_length=2, max_length=255)
+    last_name = me.StringField(min_length=2, max_length=255)
+    telephone = me.StringField(min_length=10, max_length=12, regex='^[0-9]*$')
+    orders = me.EmbeddedDocumentListField(Order)
+
+
+    @staticmethod
+    def get_user(chat):
+        user = User.objects(user_id=chat.id)
+        if not user:
+            user = User.objects.create(user_id=chat.id, first_name=chat.first_name if chat.first_name else '' ,
+                                       last_name=chat.last_name if chat.last_name else '')
+        else:
+            user = user[0]
+        return user
+
+    def get_active_order(self):
+        try:
+            order = self.orders.get(active=True)
+        except me.DoesNotExist:
+            order = None
+        return order
+
+    def add_product_to_order(self, product, count):
+        active_orders = self.get_active_order()
+        if not active_orders:
+            active_orders = self.orders.create()
+
+        try:
+            line_product = active_orders.products.get(product=product)
+            line_product.count += count
+            line_product.summ = line_product.count*product.actual_price
+        except me.DoesNotExist:
+            active_orders.products.create(product=product, count=count, summ=count*product.actual_price)
+        self.save()
+
+    def get_count_products_active_order(self):
+
+        active_orders = self.get_active_order()
+        if not active_orders:
+            return 0
+
+        sums = User.objects(id=self.id).aggregate([
+                # {'$unwind': '$orders'},
+                {'$unwind': '$orders.products'},
+                {'$group': {'_id': '$_id', 'count_products': {'$sum': 1}}}
+            ])
+        for i in sums:
+            print(111, i)
+        # sums = active_orders.aggregate([
+        #         {'$unwind': 'products'},
+        #         {'$group': {'_id': '', 'count_products': {'$sum': 'products.count'}}}
+        #     ])
+
+class Text(me.Document):
+    GRITINGS = 'greetings'
+    DISCOUNT = 'discount'
+    ADD_TO_CART = 'add_to_cart'
+    LIST_CATEGORYS = 'list_categorys'
+    PRICE = 'price'
+    RETURN_TO_TOP = 'return_to_the_top_level'
+
+    START_KB_LIST_CATEGORYS = 'start_kb_list_categorys'
+    START_KB_DISCOUNT = 'start_kb_discount'
+    START_KB_NEWS = 'start_kb_news'
+
+    TITLES_CONSTANT = (
+        (GRITINGS, 'greetings'),
+        (DISCOUNT, 'discount'),
+        (ADD_TO_CART, 'add to cart'),
+        (PRICE, 'price'),
+        (LIST_CATEGORYS, 'list_categorys'),
+        (RETURN_TO_TOP, 'Return to the top level'),
+        (START_KB_LIST_CATEGORYS, 'start_kb list categorys'),
+        (START_KB_DISCOUNT, 'start_kb discount'),
+        (START_KB_NEWS, 'start_kb news')
+
+
+    )
+    title = me.StringField(required=True, choices=TITLES_CONSTANT, unique=True)
+    body = me.StringField(min_length=4, max_length=4096)
+
+    @staticmethod
+    def get_body(title_):
+        return Text.objects.get(title=title_).body
 
 class New(me.Document):
     title = me.StringField(min_length=2, max_length=512, required=True)
@@ -60,29 +157,3 @@ class New(me.Document):
         count_item = cls.objects.count()
         start_nom = count_item-count_item if count_item > count_item else 0
         return cls.objects[start_nom:]
-
-class Text(me.Document):
-    GRITINGS = 'greetings'
-    DISCOUNT = 'discount'
-    TITLES_CONSTANT = (
-        (GRITINGS, 'greetings'),
-        (DISCOUNT, 'discount')
-    )
-    title = me.StringField(required=True, choices=TITLES_CONSTANT, unique=True)
-    body = me.StringField(min_length=4, max_length=4096)
-
-class User(me.Document):
-    user_id = me.IntField(unique=True, required=True)
-    first_name = me.StringField(min_length=2, max_length=255)
-    last_name = me.StringField(min_length=2, max_length=255)
-
-    @staticmethod
-    def get_user(chat):
-        user = User.objects(user_id=chat.id)
-        if not user:
-            user = User.objects.create(user_id=chat.id, first_name=chat.first_name if chat.first_name else '' ,
-                                       last_name=chat.last_name if chat.last_name else '')
-        else:
-            user = user[0]
-
-        return user

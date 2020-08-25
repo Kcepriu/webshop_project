@@ -1,7 +1,7 @@
+from ..db import Text
 START_KB = {
-    'categories': 'Список категорий',
-    'discount': 'Товары со скидкой',
-    'news': 'Последние новости'
+    'categories':   Text.get_body(Text.START_KB_LIST_CATEGORYS),
+    'discount':     Text.get_body(Text.START_KB_DISCOUNT),
+    'news':         Text.get_body(Text.START_KB_NEWS)
     }
 
-ADD_TO_CART = 'Добавить в корзину'

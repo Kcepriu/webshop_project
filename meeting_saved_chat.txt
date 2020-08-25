@@ -1,0 +1,77 @@
+19:03:28	 From o.hmyria : +
+19:03:32	 From Aleksandr Bronza : +
+19:03:35	 From Vova Zavadskiy : +
+19:03:44	 From Artem Belan : +
+19:03:47	 From sergiy To All Panelists : +
+19:04:09	 From Andrii Pavlichenko : +
+19:04:12	 From Oleksandr Diomin : +
+19:04:14	 From Boris : +
+19:04:23	 From Олександр Газнюк : я уже есть
+19:05:06	 From Vova Zavadskiy : все вроде ясно там было
+19:11:32	 From Vova Zavadskiy : префикс у всех одинаковый?
+19:25:07	 From Aleksandr Bronza : Вроде норм
+19:26:11	 From Vova Zavadskiy : нет
+19:26:15	 From Vova Zavadskiy : 1 минуту
+19:43:49	 From Oleksandr Diomin : Welcome to nginx!
+19:44:47	 From o.hmyria : +
+19:44:53	 From Vova Zavadskiy : я нет
+19:45:06	 From Vova Zavadskiy : у меня с гитом проблемы были
+19:45:12	 From Vova Zavadskiy : я все пропустил(
+19:45:28	 From IT Education To sergiy(Privately) : sudo apt-get update
+19:45:48	 From IT Education : sudo apt-get update 
+19:45:50	 From Олександр Газнюк : history
+19:45:53	 From IT Education : sudo apt install nginx 
+19:46:56	 From Vova Zavadskiy : спасибо
+19:49:46	 From IT Education : sudo apt install python3-pip
+19:50:08	 From IT Education : sudo apt install python3-pip  -y
+19:52:46	 From IT Education : pip3 install virtualenv
+19:53:28	 From IT Education : apt-get install python3-venv
+19:53:28	 From Oleksandr Diomin : succes
+19:53:54	 From IT Education : python3 -m virtualenv venv
+19:54:41	 From IT Education : source venv/bin/activate
+19:55:52	 From IT Education : pip install -r requirements.txt
+19:56:53	 From Vova Zavadskiy : у меня файла этого нет
+19:58:16	 From IT Education : flask flask-restful PyTelegramBotAPI
+19:58:21	 From IT Education : mongoengine
+19:58:36	 From Oleksandr Diomin : pip freeze >requirements.txt
+20:00:01	 From IT Education : sudo apt install -y mongodb
+20:01:11	 From Vova Zavadskiy : все ясно
+20:05:34	 From Boris : у кого-то включен микрофон
+20:12:17	 From Boris : расшарьте экран, плиз
+20:14:58	 From Vova Zavadskiy : верните
+20:21:02	 From IT Education : sudo cp webhook_cert.pem /etc/ssl/certs/
+20:21:06	 From IT Education : sudo cp webhook_pkey.pem /etc/ssl/private/
+20:21:35	 From IT Education : ls /etc/ssl/certs/
+20:21:51	 From IT Education : sudo ls /etc/ssl/private/
+20:22:32	 From IT Education : cd /etc/nginx/sites-available/
+20:23:11	 From Boris : не тру ))
+20:23:35	 From Boris : или vim поставить )
+20:27:22	 From IT Education :     listen 443 ssl http2;
+        ssl_certificate /etc/ssl/certs/webhook_cert.pem;
+        ssl_certificate_key /etc/ssl/private/webhook_pkey.pem;
+        ssl_protocls TLSv1.2 TLSv1.1 TLSv1;
+20:27:51	 From IT Education : ssl_protocols TLSv1.2 TLSv1.1 TLSv1;
+20:30:07	 From Олександр Газнюк : nginx -t для ткеста
+20:30:10	 From sergiy : sudo service nginx configtest
+20:32:20	 From Aleksandr Bronza : Покажите еще раз default
+20:37:47	 From Олександр Газнюк : unknown directive "proxy_pass_http" in /etc/nginx/sites-enabled/default:56
+20:50:46	 From Vova Zavadskiy : покажите мейн
+20:50:57	 From Vova Zavadskiy : выше
+20:51:15	 From Vova Zavadskiy : у меня вебшоп бот не видит
+20:51:19	 From Vova Zavadskiy : ошибка
+20:51:24	 From Oleksandr Diomin : AttributeError: 'WebShopBot' object has no attribute 'process_now_update'
+20:51:42	 From Boris : now new
+20:53:26	 From Vova Zavadskiy : остальные мудли не видит теперь
+20:53:31	 From Vova Zavadskiy : модули*
+20:53:48	 From Vova Zavadskiy : структуру правильно сделал
+20:53:49	 From Oleksandr Diomin : AttributeError: 'WebShopBot' object has no attribute 'process_new_update'
+20:54:33	 From Vova Zavadskiy : работает
+20:54:53	 From Boris : updateupdates
+20:54:57	 From Oleksandr Diomin : get_connection    raise ConnectionFailure(msg)mongoengine.connection.ConnectionFailure: You have not defined a default connection"
+20:55:40	 From Vova Zavadskiy : я в Телеграме кинул, еще одна ошибка
+20:57:20	 From IT Education : pip install gunicorn
+21:00:12	 From Олександр Газнюк : а после ребута сервера, что бы сам запускался?
+21:17:01	 From Oleksandr Diomin : веррнитен терминал на секунду, плиз...
+21:17:15	 From Oleksandr Diomin : *верните*
+21:19:22	 From Oleksandr Diomin : спасибо. теперь можно readme.md
+21:22:37	 From Oleksandr Diomin : при оформлении заказа, может есть смісл проверять, есть в базе у юзера его имя и телефон, и спрашивать если нет?
