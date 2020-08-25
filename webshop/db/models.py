@@ -98,22 +98,31 @@ class User(me.Document):
         self.save()
 
     def get_count_products_active_order(self):
+        sums = User.objects(id=self.id).aggregate([
+                {'$unwind': '$orders'},
+                {'$match': {'orders.active': True}},
+                {'$unwind': '$orders.products'},
+                {'$group': {'_id': '$_id', 'count_products': {'$sum': '$orders.products.count'}}}
+            ])
 
-        active_orders = self.get_active_order()
-        if not active_orders:
+        if sums.alive:
+            elem = sums.next()
+            return elem['count_products']
+        else:
             return 0
 
-        sums = User.objects(id=self.id).aggregate([
-                # {'$unwind': '$orders'},
-                {'$unwind': '$orders.products'},
-                {'$group': {'_id': '$_id', 'count_products': {'$sum': 1}}}
-            ])
-        for i in sums:
-            print(111, i)
-        # sums = active_orders.aggregate([
-        #         {'$unwind': 'products'},
-        #         {'$group': {'_id': '', 'count_products': {'$sum': 'products.count'}}}
-        #     ])
+    def get_count_orders(self):
+        count_orders = User.objects(id=self.id).aggregate([
+            {'$unwind': '$orders'},
+            {'$match': {'orders.active': False}},
+            {'$group': {'_id': '$_id', 'count_orders': {'$sum': 1}}}
+        ])
+
+        if count_orders.alive:
+            elem = count_orders.next()
+            return elem['count_orders']
+        else:
+            return 0
 
 class Text(me.Document):
     GRITINGS = 'greetings'
@@ -122,21 +131,27 @@ class Text(me.Document):
     LIST_CATEGORYS = 'list_categorys'
     PRICE = 'price'
     RETURN_TO_TOP = 'return_to_the_top_level'
+    PRODUCT_ADD_TO_CART = 'product_add_to_cart'
 
     START_KB_LIST_CATEGORYS = 'start_kb_list_categorys'
     START_KB_DISCOUNT = 'start_kb_discount'
     START_KB_NEWS = 'start_kb_news'
+    GO_TO_CART = 'go_to_cart'
+    ORDER_HYSTORY = 'order_history'
 
     TITLES_CONSTANT = (
         (GRITINGS, 'greetings'),
         (DISCOUNT, 'discount'),
         (ADD_TO_CART, 'add to cart'),
         (PRICE, 'price'),
+        (PRODUCT_ADD_TO_CART,  'product_add_to_cart'),
         (LIST_CATEGORYS, 'list_categorys'),
         (RETURN_TO_TOP, 'Return to the top level'),
         (START_KB_LIST_CATEGORYS, 'start_kb list categorys'),
         (START_KB_DISCOUNT, 'start_kb discount'),
-        (START_KB_NEWS, 'start_kb news')
+        (START_KB_NEWS, 'start_kb news'),
+        (GO_TO_CART, 'go_to_cart'),
+        (ORDER_HYSTORY, 'order_history')
 
 
     )

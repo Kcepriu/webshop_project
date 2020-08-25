@@ -4,4 +4,3 @@ START_KB = {
     'discount':     Text.get_body(Text.START_KB_DISCOUNT),
     'news':         Text.get_body(Text.START_KB_NEWS)
     }
-

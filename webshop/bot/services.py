@@ -56,14 +56,20 @@ class WebShopBot(TeleBot):
             self.send_long_message(chat_id, item.title)
             self.send_long_message(chat_id, item.text)
 
-    def update_keyboard_markup(self, user, chat_id):
+    def update_keyboard_markup(self, user, chat_id, txt):
         kb = ReplyKeyboardMarkup(resize_keyboard=True)
         buttons = [KeyboardButton(button) for button in START_KB.values()]
 
-        print(user.get_count_products_active_order())
+        count_products_from_cart = user.get_count_products_active_order()
+        # хотів причепити кількість товарів в корзині, але не зрозуміло як відслідковувати натискання кнопки
+        if count_products_from_cart:
+            buttons.append(KeyboardButton(Text.get_body(Text.GO_TO_CART)) )
+
+        count_orders = user.get_count_orders()
+        if count_orders:
+            buttons.append(KeyboardButton(Text.get_body(Text.ORDER_HYSTORY)))
 
         kb.add(*buttons)
-        txt = Text.get_body(Text.GRITINGS)
         self.send_message(chat_id, txt, reply_markup=kb)
 
 

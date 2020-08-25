@@ -296,6 +296,18 @@ def seed_textts():
         {
             'title': 'start_kb_news',
             'body': 'Последние новости'
+        },
+        {
+            'title': 'product_add_to_cart',
+            'body': 'Товар добавлен в корзину'
+        },
+        {
+            'title': 'go_to_cart',
+            'body': 'Перейти в корзину'
+        },
+        {
+            'title': 'order_history',
+            'body': 'История заказов'
         }
     ]
     Text.drop_collection()
