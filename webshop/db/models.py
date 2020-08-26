@@ -54,9 +54,18 @@ class Line_Order(me.EmbeddedDocument):
     count = me.IntField(min_value=1)
     summ = me.DecimalField(min_value=1, force_string=True)
 
-
 class Order(me.EmbeddedDocument):
-    active = me.BooleanField(default=True)
+    ORDER_CANCELED='canceled'
+    ORDER_COMPLETED='completed'
+    ORDER_ACTIVE='active'
+    STATUS_CONSTANT = (
+        (ORDER_CANCELED, 'order canceled'),
+        (ORDER_COMPLETED, 'order completed'),
+        (ORDER_ACTIVE, 'order active')
+    )
+    status = me.StringField(min_length=5, choices=STATUS_CONSTANT, default=ORDER_ACTIVE, required=True)
+    date = me.DateTimeField(default=datetime.now())
+    nom = me.IntField(min_value=1)
     products = me.EmbeddedDocumentListField(Line_Order)
 
 class User(me.Document):
@@ -65,7 +74,6 @@ class User(me.Document):
     last_name = me.StringField(min_length=2, max_length=255)
     telephone = me.StringField(min_length=10, max_length=12, regex='^[0-9]*$')
     orders = me.EmbeddedDocumentListField(Order)
-
 
     @staticmethod
     def get_user(chat):
@@ -79,15 +87,18 @@ class User(me.Document):
 
     def get_active_order(self):
         try:
-            order = self.orders.get(active=True)
+            order = self.orders.get(status=Order.ORDER_ACTIVE)
         except me.DoesNotExist:
             order = None
         return order
 
+    def create_order(self):
+        return self.orders.create(nom=self.get_count_orders()+1)
+
     def add_product_to_order(self, product, count):
         active_orders = self.get_active_order()
         if not active_orders:
-            active_orders = self.orders.create()
+            active_orders = self.create_order()
 
         try:
             line_product = active_orders.products.get(product=product)
@@ -100,7 +111,7 @@ class User(me.Document):
     def get_count_products_active_order(self):
         sums = User.objects(id=self.id).aggregate([
                 {'$unwind': '$orders'},
-                {'$match': {'orders.active': True}},
+                {'$match': {'orders.status': Order.ORDER_ACTIVE}},
                 {'$unwind': '$orders.products'},
                 {'$group': {'_id': '$_id', 'count_products': {'$sum': '$orders.products.count'}}}
             ])
@@ -114,7 +125,7 @@ class User(me.Document):
     def get_count_orders(self):
         count_orders = User.objects(id=self.id).aggregate([
             {'$unwind': '$orders'},
-            {'$match': {'orders.active': False}},
+            {'$match': {'orders.status': {'$ne': Order.ORDER_ACTIVE}}},
             {'$group': {'_id': '$_id', 'count_orders': {'$sum': 1}}}
         ])
 
@@ -123,6 +134,9 @@ class User(me.Document):
             return elem['count_orders']
         else:
             return 0
+
+    def get_order_by_number(self, number):
+        return self.orders[int(number)-1]
 
 class Text(me.Document):
     GRITINGS = 'greetings'
@@ -137,7 +151,7 @@ class Text(me.Document):
     START_KB_DISCOUNT = 'start_kb_discount'
     START_KB_NEWS = 'start_kb_news'
     GO_TO_CART = 'go_to_cart'
-    ORDER_HYSTORY = 'order_history'
+    ORDER_HISTORY = 'order_history'
 
     TITLES_CONSTANT = (
         (GRITINGS, 'greetings'),
@@ -151,7 +165,7 @@ class Text(me.Document):
         (START_KB_DISCOUNT, 'start_kb discount'),
         (START_KB_NEWS, 'start_kb news'),
         (GO_TO_CART, 'go_to_cart'),
-        (ORDER_HYSTORY, 'order_history')
+        (ORDER_HISTORY, 'order_history')
 
 
     )

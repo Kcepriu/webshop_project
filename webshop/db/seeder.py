@@ -299,7 +299,7 @@ def seed_textts():
         },
         {
             'title': 'product_add_to_cart',
-            'body': 'Товар добавлен в корзину'
+            'body': 'добавлен в корзину'
         },
         {
             'title': 'go_to_cart',

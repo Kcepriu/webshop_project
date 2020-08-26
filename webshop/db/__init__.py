@@ -1,1 +1,1 @@
-from .models import Category, Product, Parameter, New, Text, User
+from .models import Category, Product, Parameter, New, Text, User, Order
