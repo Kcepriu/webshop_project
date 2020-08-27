@@ -1,7 +1,7 @@
 from .config import TOKEN
 from ..db import Category, Product, User, New, Text, Order
 from .keyboards import START_KB
-from .lookups import SEPARATOR
+from .lookups import SEPARATOR, HENDLER_ORDER, HENDLER_CATEGORY, HENDLER_PRODUCT, HENDLER_HISTORY_ORDER
 from .services import WebShopBot
 
 
@@ -37,10 +37,11 @@ def go_to_cart(message):
 # Історія заказів
 @bot_instance.message_handler(content_types=['text'], func=lambda m: m.text == Text.get_body(Text.ORDER_HISTORY))
 def order_hystory(message):
-    pass
+    user = User.get_user(chat=message.chat)
+    bot_instance.get_history_orders(user)
 
 # Клікнули по категорії
-@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == Category.__name__)
+@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_CATEGORY)
 def clic_category(call):
     id_category = call.data.split(SEPARATOR)[1]
 
@@ -62,24 +63,26 @@ def clic_category(call):
         bot_instance.send_products(call.message.chat.id, category.get_products())
 
 # Клікнули по товару
-@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == Product.__name__)
+@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_PRODUCT)
 def clic_product(call):
     product = Product.objects.get(id=call.data.split(SEPARATOR)[1])
     user = User.get_user(chat=call.message.chat)
     # Треба додати діалог вводу кількості
-    user.add_product_to_order(product, 1)
+    order = Order.get_active_order(user)
+    order.add_product_to_order(product, 1)
+
     text = f'{product.title} - {Text.get_body(Text.PRODUCT_ADD_TO_CART)}'
     bot_instance.generate_and_send_start_kb(user, call.message.chat.id, text)
 
 # Клікнули Оформити замовлення
-@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == Order.__name__
-                                                       and call.data.split(SEPARATOR)[3] == Order.ORDER_COMPLETED)
+@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_ORDER
+                                                       and call.data.split(SEPARATOR)[2] == Order.ORDER_PROCESSED)
 def order_complete(call):
     #  Якщо нема телефона чи фіо то перепитати
-    bot_instance.completed_order(call.message, call.data.split(SEPARATOR)[2])
+    bot_instance.next_status_order(call.message, call.data.split(SEPARATOR)[1], Order.ORDER_PROCESSED)
 
 # Клікнули Відмінити замовлення
-@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == Order.__name__
-                                     and call.data.split(SEPARATOR)[3] == Order.ORDER_CANCELED)
+@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_ORDER
+                                     and call.data.split(SEPARATOR)[2] == Order.ORDER_CANCELED)
 def order_canceled(call):
-    bot_instance.canceled_order(call.message, call.data.split(SEPARATOR)[2])
+    bot_instance.next_status_order(call.message, call.data.split(SEPARATOR)[1], Order.ORDER_CANCELED)

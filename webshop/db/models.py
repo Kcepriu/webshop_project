@@ -1,4 +1,5 @@
 import mongoengine as me
+from mongoengine.queryset.visitor import Q
 from decimal import  Decimal
 from datetime import datetime
 
@@ -24,11 +25,13 @@ class Category(me.Document):
         self.subcategories.append(subcategory)
         self.save()
 
+
 class Parameter(me.EmbeddedDocument):
     height = me.FloatField()
     widht = me.FloatField()
     length = me.FloatField()
     weight = me.FloatField()
+
 
 class Product(me.Document):
     title = me.StringField(min_length=2, max_length=512, required=True)
@@ -49,94 +52,104 @@ class Product(me.Document):
     def get_products_with_discount(cls):
         return cls.objects(discount__ne=0)
 
-class Line_Order(me.EmbeddedDocument):
-    product = me.ReferenceField(Product)
-    count = me.IntField(min_value=1)
-    summ = me.DecimalField(min_value=1, force_string=True)
-
-class Order(me.EmbeddedDocument):
-    ORDER_CANCELED='canceled'
-    ORDER_COMPLETED='completed'
-    ORDER_ACTIVE='active'
-    STATUS_CONSTANT = (
-        (ORDER_CANCELED, 'order canceled'),
-        (ORDER_COMPLETED, 'order completed'),
-        (ORDER_ACTIVE, 'order active')
-    )
-    status = me.StringField(min_length=5, choices=STATUS_CONSTANT, default=ORDER_ACTIVE, required=True)
-    date = me.DateTimeField(default=datetime.now())
-    nom = me.IntField(min_value=1)
-    products = me.EmbeddedDocumentListField(Line_Order)
 
 class User(me.Document):
     user_id = me.IntField(unique=True, required=True)
     first_name = me.StringField(min_length=2, max_length=255)
     last_name = me.StringField(min_length=2, max_length=255)
     telephone = me.StringField(min_length=10, max_length=12, regex='^[0-9]*$')
-    orders = me.EmbeddedDocumentListField(Order)
 
-    @staticmethod
-    def get_user(chat):
-        user = User.objects(user_id=chat.id)
+    @classmethod
+    def get_user(cls, chat):
+        user = cls.objects(user_id=chat.id)
         if not user:
-            user = User.objects.create(user_id=chat.id, first_name=chat.first_name if chat.first_name else '' ,
+            user = cls.objects.create(user_id=chat.id, first_name=chat.first_name if chat.first_name else '' ,
                                        last_name=chat.last_name if chat.last_name else '')
         else:
             user = user[0]
         return user
 
-    def get_active_order(self):
+
+class Line_Order(me.EmbeddedDocument):
+    product = me.ReferenceField(Product)
+    count = me.IntField(min_value=1)
+    summ = me.DecimalField(min_value=1, force_string=True)
+
+
+class Order(me.Document):
+    ORDER_ACTIVE = 'active'
+    ORDER_PROCESSED = 'processed'
+    ORDER_COMPLETED = 'completed'
+    ORDER_CANCELED = 'canceled'
+
+    STATUS_CONSTANT = (
+        (ORDER_CANCELED, 'order canceled'),
+        (ORDER_COMPLETED, 'order completed'),
+        (ORDER_ACTIVE, 'order active'),
+        (ORDER_PROCESSED, 'order processed')
+    )
+    nom = me.IntField(min_value=1)
+    date = me.DateTimeField(default=datetime.now())
+    user = me.ReferenceField(User)
+    status = me.StringField(min_length=5, choices=STATUS_CONSTANT, default=ORDER_ACTIVE, required=True)
+    products = me.EmbeddedDocumentListField(Line_Order)
+
+    def get_text_status_order(self):
+        if self.status == Order.ORDER_CANCELED:
+            return 'Заказ отменен'
+        elif self.status == Order.ORDER_ACTIVE:
+            return 'Заказ редактируется'
+        elif self.status == Order.ORDER_COMPLETED:
+            return 'Заказ выполнен'
+        else:
+            return 'Заказ орабатывается'
+
+
+    @classmethod
+    def find_active_order(cls, user: User):
         try:
-            order = self.orders.get(status=Order.ORDER_ACTIVE)
+            order = cls.objects().get(Q(user=user) and Q(status=Order.ORDER_ACTIVE))
         except me.DoesNotExist:
             order = None
         return order
 
-    def create_order(self):
-        return self.orders.create(nom=self.get_count_orders()+1)
+    @classmethod
+    def get_count_orders(cls, user: User):
+        return cls.objects(user=user).count()
 
-    def add_product_to_order(self, product, count):
-        active_orders = self.get_active_order()
+    @classmethod
+    def create_order(cls, user: User):
+        return cls.objects.create(user=user, nom=cls.get_count_orders(user)+1)
+
+    @classmethod
+    def get_active_order(cls, user: User):
+        active_orders = cls.find_active_order(user)
         if not active_orders:
-            active_orders = self.create_order()
+            active_orders = cls.create_order(user)
+        return active_orders
 
+
+    def add_product_to_order(self, product: Product, count: int):
         try:
-            line_product = active_orders.products.get(product=product)
+            line_product = self.products.get(product=product)
             line_product.count += count
             line_product.summ = line_product.count*product.actual_price
         except me.DoesNotExist:
-            active_orders.products.create(product=product, count=count, summ=count*product.actual_price)
+            self.products.create(product=product, count=count, summ=count*product.actual_price)
         self.save()
 
-    def get_count_products_active_order(self):
-        sums = User.objects(id=self.id).aggregate([
-                {'$unwind': '$orders'},
-                {'$match': {'orders.status': Order.ORDER_ACTIVE}},
-                {'$unwind': '$orders.products'},
-                {'$group': {'_id': '$_id', 'count_products': {'$sum': '$orders.products.count'}}}
+    @classmethod
+    def get_count_products_in_active_order(cls, user):
+        sums = cls.objects(Q(user=user) and Q(status=Order.ORDER_ACTIVE)).aggregate([
+            {'$unwind': '$products'},
+            {'$group': {'_id': '$_id', 'count_products': {'$sum': '$products.count'}}}
             ])
-
         if sums.alive:
             elem = sums.next()
             return elem['count_products']
         else:
             return 0
 
-    def get_count_orders(self):
-        count_orders = User.objects(id=self.id).aggregate([
-            {'$unwind': '$orders'},
-            {'$match': {'orders.status': {'$ne': Order.ORDER_ACTIVE}}},
-            {'$group': {'_id': '$_id', 'count_orders': {'$sum': 1}}}
-        ])
-
-        if count_orders.alive:
-            elem = count_orders.next()
-            return elem['count_orders']
-        else:
-            return 0
-
-    def get_order_by_number(self, number):
-        return self.orders[int(number)-1]
 
 class Text(me.Document):
     GRITINGS = 'greetings'
@@ -152,6 +165,15 @@ class Text(me.Document):
     START_KB_NEWS = 'start_kb_news'
     GO_TO_CART = 'go_to_cart'
     ORDER_HISTORY = 'order_history'
+    ORDER_PROCESSED = 'order_processed'
+    ORDER_CANCELED = 'order_canceled'
+    CURRENCY = 'currerncy'
+    PCS = 'pcs'
+    SUMM_TO_PAY = 'summ_to_pay'
+    ORDER = 'order'
+    FROM = 'from'
+    ORDER_STATUS = 'order_status'
+
 
     TITLES_CONSTANT = (
         (GRITINGS, 'greetings'),
@@ -165,12 +187,22 @@ class Text(me.Document):
         (START_KB_DISCOUNT, 'start_kb discount'),
         (START_KB_NEWS, 'start_kb news'),
         (GO_TO_CART, 'go_to_cart'),
-        (ORDER_HISTORY, 'order_history')
+        (ORDER_HISTORY, 'order_history'),
+
+        (ORDER_PROCESSED, 'order_processed'),
+        (ORDER_CANCELED, 'order_canceled'),
+
+        (CURRENCY, 'currerncy'),
+        (PCS, 'pcs'),
+        (SUMM_TO_PAY, 'summ_to_pay'),
+        (ORDER, 'order'),
+        (FROM, 'from'),
+        (ORDER_STATUS, 'order_status')
 
 
     )
     title = me.StringField(required=True, choices=TITLES_CONSTANT, unique=True)
-    body = me.StringField(min_length=4, max_length=4096)
+    body = me.StringField(min_length=2, max_length=4096)
 
     @staticmethod
     def get_body(title_):

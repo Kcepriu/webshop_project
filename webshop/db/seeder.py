@@ -18,6 +18,9 @@ class InitialData:
         ['Формы для шоколада', 'Описание Формы для шоколада', 'Кондитерский инвентарь'],
         ['Формы для мороженого', 'Описание Формы для мороженого', 'Кондитерский инвентарь'],
         ['Формы для мастики', 'Описание Формы для мастики', 'Кондитерский инвентарь'],
+
+        ['Tets +1', 'Описание Формы для мороженого', 'Формы для мороженого'],
+        ['Test +2', 'Описание Формы для мороженого', 'Tets +1'],
     ],
         'Product': [
             {   'title': 'N4231 Стакан низкий',
@@ -241,17 +244,16 @@ class InitialData:
             parent = Category.objects.get(title=category[2]) if category[2] else None
             print(category[0],category[2],  parent)
             new_category = Category.objects.create(title=category[0], description=category[1], parent=parent)
+            if parent:
+                parent.add_subcategory(new_category)
 
-        for category in Category.objects.filter(parent=None):
-            for subcategories in Category.objects.filter(parent=category):
-                category.subcategories.append(subcategories)
-            category.save()
         for product in self.data_from_init['Product']:
             category = Category.objects.get(title=product['category'])
             product['category']=category
             Product.objects.create(**product)
-        for new in self.data_from_init['News']:
-            New.objects.create(**new)
+
+        # for new in self.data_from_init['News']:
+        #     New.objects.create(**new)
 
         pass
 
@@ -308,11 +310,44 @@ def seed_textts():
         {
             'title': 'order_history',
             'body': 'История заказов'
+        },
+        {
+            'title': 'order_processed',
+            'body': 'Оформить заказ'
+        },
+        {
+            'title': 'order_canceled',
+            'body': 'Отменить заказ'
+        },
+        {
+            'title': 'currerncy',
+            'body': 'грн'
+        },
+        {
+            'title': 'pcs',
+            'body': 'шт'
+        },
+        {
+            'title': 'summ_to_pay',
+            'body': 'Сумма к оплате'
+        },
+        {
+            'title': 'order',
+            'body': 'Заказ'
+        },
+        {
+            'title': 'from',
+            'body': 'от'
+        },
+        {
+            'title': 'order_status',
+            'body': 'Статут заказа'
         }
     ]
     Text.drop_collection()
 
     for item in list_text:
+        print(item['title'])
         Text.objects.create(**item)
 
 
