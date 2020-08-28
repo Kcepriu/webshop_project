@@ -341,8 +341,27 @@ class InitialData:
         {
             'title': 'text_order_canceled',
             'body': 'Заказ отменен'
+        },
+        {
+            'title': 'enter_phone_number',
+            'body': 'Введите номер телефона'
+        },
+        {
+            'title': 'enter_last_fist_name',
+            'body': 'Введите Фамилию и имя'
+        },
+        {
+            'title': 're_enter',
+            'body': 'Повторите ввод'
+        },
+        {
+            'title': 'incorrect_phone_number',
+            'body': 'Ввели не коретный номер телефона'
+        },
+        {
+            'title': 'incorrect_name',
+            'body': 'Ввели не коретные данные'
         }
-
     ]
 
     def initial_data(self):

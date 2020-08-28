@@ -3,6 +3,7 @@ from mongoengine.queryset.visitor import Q
 from decimal import  Decimal
 from datetime import datetime
 
+
 me.connect('webshopdb')
 
 class Category(me.Document):
@@ -203,6 +204,11 @@ class Text(me.Document):
     TEXT_ORDER_PROCESSED = 'text_order_processed'
     TEXT_ORDER_COMPLETED = 'text_order_completed'
     TEXT_ORDER_CANCELED = 'text_order_canceled'
+    ENTER_PHONE_NUMBER = 'enter_phone_number'
+    ENTER_LAST_FIST_NAME = 'enter_last_fist_name'
+    RE_ENTER = 're_enter'
+    INCORRECT_PHONE_NUMBER = 'incorrect_phone_number'
+    INCORRECN_NAME = 'incorrect_name'
 
 
     TITLES_CONSTANT = (
@@ -230,7 +236,12 @@ class Text(me.Document):
         (TEXT_ORDER_ACTIVE, 'text_order_active'),
         (TEXT_ORDER_PROCESSED, 'text_order_processed'),
         (TEXT_ORDER_COMPLETED, 'text_order_completed'),
-        (TEXT_ORDER_CANCELED, 'text_order_canceled')
+        (TEXT_ORDER_CANCELED, 'text_order_canceled'),
+        (ENTER_PHONE_NUMBER, 'enter_phone_number'),
+        (ENTER_LAST_FIST_NAME, 'enter_last_fist_name'),
+        (RE_ENTER, 're_enter'),
+        (INCORRECT_PHONE_NUMBER, 'incorrect_phone_number'),
+        (INCORRECN_NAME, 'incorrect_name')
     )
     title = me.StringField(required=True, choices=TITLES_CONSTANT, unique=True)
     body = me.StringField(min_length=2, max_length=4096)

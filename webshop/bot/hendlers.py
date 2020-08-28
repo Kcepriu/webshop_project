@@ -47,6 +47,13 @@ def set_telephone_user(message):
     user = User.get_user(chat=message.chat)
     bot_instance.set_telephone_user(user, message.text)
 
+#Ввели ФІО
+@bot_instance.message_handler(content_types=['text'],
+                              func=lambda m: User.get_user(chat=m.chat).las_request == User.REQUEST_NAME)
+def set_telephone_user(message):
+    user = User.get_user(chat=message.chat)
+    bot_instance.set_name_user(user, message.text)
+
 
 # Клікнули по категорії
 @bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_CATEGORY)

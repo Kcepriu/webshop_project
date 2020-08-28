@@ -114,9 +114,8 @@ class WebShopBot(TeleBot):
         else:
             self.send_message(order.user.user_id, txt, reply_markup=reply_markup)
 
-    # def next_status_order(self, message: str, order_id: str, order_status):
     def next_status_order(self, order: Order, message_id: str, order_status):
-        # order.status = order_status
+        order.status = order_status
         order.save()
 
         text = order.get_text_status_order()
@@ -146,59 +145,15 @@ class WebShopBot(TeleBot):
         #  Якщо нема телефона чи фіо то перепитати
         user = order.user
 
-        # if self.send_message_input_telephone_user(user, 'Введите номер телефона', message_id):
-        if self.send_message_input_field_user(user, User.REQUEST_TELEPHONE, 'Введите номер телефона',
+        if self.send_message_input_field_user(user, User.REQUEST_TELEPHONE, Text.get_body(Text.ENTER_PHONE_NUMBER),
                                               lambda user: user.telephone, message_id ):
             return
 
-        # if self.send_message_inpun_name_user(user, 'Введите ФИО', message_id):
-        if self.send_message_input_field_user(user, User.REQUEST_NAME, 'Введите ФИО',
+        if self.send_message_input_field_user(user, User.REQUEST_NAME, Text.get_body(Text.ENTER_LAST_FIST_NAME),
                                                   lambda user: (user.last_name or user.first_name), message_id):
             return
 
-        # bot_instance.next_status_order(call.message, call.data.split(SEPARATOR)[1], Order.ORDER_PROCESSED)
-
-    def send_message_input_telephone_user(self, user: User, text: str, message_id=None):
-        if user.telephone:
-            return
-
-        user.las_request = User.REQUEST_TELEPHONE
-        user.save()
-
-        if message_id:
-            self.edit_message_text(text, user.user_id, message_id)
-        else:
-            self.send_message(user.user_id, text)
-        return True
-
-    def set_telephone_user(self, user: User, text: str):
-        user.telephone = text
-        try:
-            user.save()
-        except ValidationError:
-            user.reload()
-            text = f'Ввели не коретный номер телефона\nПовторите ввод'
-            # self.send_message_input_telephone_user(user, text)
-            self.send_message_input_field_user(user, User.REQUEST_TELEPHONE, text,
-                                                  lambda user: user.telephone)
-            return
-
-        order = Order.get_active_order(user)
-        self.process_order(order)
-
-
-    def send_message_inpun_name_user(self, user: User, text: str, message_id=None):
-        if user.last_name or user.first_name:
-            return
-
-        user.las_request = User.REQUEST_NAME
-        user.save()
-
-        if message_id:
-            self.edit_message_text(text, user.user_id, message_id)
-        else:
-            self.send_message(user.user_id, text)
-        return True
+        self.next_status_order(order, message_id, Order.ORDER_PROCESSED)
 
 
     def send_message_input_field_user(self, user: User, status, text: str, funct,  message_id=None):
@@ -213,6 +168,38 @@ class WebShopBot(TeleBot):
         else:
             self.send_message(user.user_id, text)
         return True
+
+    def set_telephone_user(self, user: User, text: str):
+        user.telephone = text
+        user.las_request = None
+        try:
+            user.save()
+        except ValidationError:
+            user.reload()
+            text = f'{Text.get_body(Text.INCORRECT_PHONE_NUMBER)}\n{Text.get_body(Text.RE_ENTER)}'
+            self.send_message_input_field_user(user, User.REQUEST_TELEPHONE, text,
+                                                  lambda user: user.telephone)
+            return
+
+        order = Order.get_active_order(user)
+        self.process_order(order)
+
+    def set_name_user(self, user: User, text: str):
+        texts = text.split()
+        if len(texts) < 2:
+            text = f'{Text.get_body(Text.INCORRECN_NAME)}\n{Text.get_body(Text.RE_ENTER)}'
+            self.send_message_input_field_user(user, User.REQUEST_NAME, text,
+                                                  lambda user: (user.last_name or user.first_name))
+            return
+
+        user.last_name = texts[0]
+        user.first_name = texts[1]
+        user.las_request = None
+        user.save()
+
+        order = Order.get_active_order(user)
+        self.process_order(order)
+
 
 
 
