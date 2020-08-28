@@ -12,7 +12,7 @@ bot_instance = WebShopBot(TOKEN)
 def start(message):
     user = User.get_user(chat=message.chat)
     text = Text.get_body(Text.GRITINGS)
-    bot_instance.generate_and_send_start_kb(user, message.chat.id, text)
+    bot_instance.generate_and_send_start_kb(user, text)
 
 # Список категорій
 @bot_instance.message_handler(content_types=['text'], func=lambda m: m.text == START_KB['categories'])
@@ -35,10 +35,18 @@ def go_to_cart(message):
     bot_instance.send_cart(message)
 
 # Історія заказів
-@bot_instance.message_handler(content_types=['text'], func=lambda m: m.text == Text.get_body(Text.ORDER_HISTORY))
+@bot_instance.message_handler(content_types=['text'], func=lambda m: m.text.find(Text.get_body(Text.ORDER_HISTORY)) >= 0)
 def order_hystory(message):
     user = User.get_user(chat=message.chat)
     bot_instance.get_history_orders(user)
+
+#Ввели номер телефона
+@bot_instance.message_handler(content_types=['text'],
+                              func=lambda m: User.get_user(chat=m.chat).las_request == User.REQUEST_TELEPHONE)
+def set_telephone_user(message):
+    user = User.get_user(chat=message.chat)
+    bot_instance.set_telephone_user(user, message.text)
+
 
 # Клікнули по категорії
 @bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_CATEGORY)
@@ -72,17 +80,24 @@ def clic_product(call):
     order.add_product_to_order(product, 1)
 
     text = f'{product.title} - {Text.get_body(Text.PRODUCT_ADD_TO_CART)}'
-    bot_instance.generate_and_send_start_kb(user, call.message.chat.id, text)
+    bot_instance.generate_and_send_start_kb(user, text)
 
 # Клікнули Оформити замовлення
 @bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_ORDER
                                                        and call.data.split(SEPARATOR)[2] == Order.ORDER_PROCESSED)
 def order_complete(call):
-    #  Якщо нема телефона чи фіо то перепитати
-    bot_instance.next_status_order(call.message, call.data.split(SEPARATOR)[1], Order.ORDER_PROCESSED)
+    order = Order.objects.get(id=call.data.split(SEPARATOR)[1])
+    bot_instance.process_order(order, call.message.message_id)
 
 # Клікнули Відмінити замовлення
 @bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_ORDER
                                      and call.data.split(SEPARATOR)[2] == Order.ORDER_CANCELED)
 def order_canceled(call):
-    bot_instance.next_status_order(call.message, call.data.split(SEPARATOR)[1], Order.ORDER_CANCELED)
+    order = Order.objects.get(id=call.data.split(SEPARATOR)[1])
+    bot_instance.next_status_order(order, call.message.message_id, Order.ORDER_CANCELED)
+
+#лікнули "Показать заказ"
+@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_HISTORY_ORDER)
+def show_order(call):
+    order = Order.objects.get(id=call.data.split(SEPARATOR)[1])
+    bot_instance.send_order(order)

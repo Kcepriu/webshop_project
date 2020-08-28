@@ -237,41 +237,20 @@ class InitialData:
                 Сведения о происшествии внесены в Единый реестр досудебных расследований по ст. 129 Уголовного кодекса Украины ("Угроза убийством"). Также решается вопрос внесения сведений по факту незаконного обращения с боеприпасами (ч. 1 ст. 263 Уголовного кодекса Украины). '''}
         ]
     }
+    list_text = [
+        {
+            'title': 'greetings',
+            'body': 'Здравствуй ..'
+        },
 
-    def initial_data(self):
-
-        for category in self.data_from_init['Category']:
-            parent = Category.objects.get(title=category[2]) if category[2] else None
-            print(category[0],category[2],  parent)
-            new_category = Category.objects.create(title=category[0], description=category[1], parent=parent)
-            if parent:
-                parent.add_subcategory(new_category)
-
-        for product in self.data_from_init['Product']:
-            category = Category.objects.get(title=product['category'])
-            product['category']=category
-            Product.objects.create(**product)
-
-        # for new in self.data_from_init['News']:
-        #     New.objects.create(**new)
-
-        pass
-
-def seed_textts():
-    list_text=[
-    {
-        'title': 'greetings',
-        'body': 'Здравствуй ..'
-    },
-
-    {
-        'title': 'discount',
-        'body': 'Спеши за скидками'
-    },
-    {
-        'title': 'add_to_cart',
-        'body': 'Добавить в корзину'
-    },
+        {
+            'title': 'discount',
+            'body': 'Спеши за скидками'
+        },
+        {
+            'title': 'add_to_cart',
+            'body': 'Добавить в корзину'
+        },
         {
             'title': 'list_categorys',
             'body': 'Список категорий'
@@ -342,18 +321,59 @@ def seed_textts():
         {
             'title': 'order_status',
             'body': 'Статут заказа'
+        },
+        {
+            'title': 'show_order',
+            'body': 'Показать заказ'
+        },
+        {
+            'title': 'text_order_active',
+            'body': 'Заказ редактируется'
+        },
+        {
+            'title': 'text_order_processed',
+            'body': 'Заказ орабатывается'
+        },
+        {
+            'title': 'text_order_completed',
+            'body': 'Заказ выполнен'
+        },
+        {
+            'title': 'text_order_canceled',
+            'body': 'Заказ отменен'
         }
+
     ]
-    Text.drop_collection()
 
-    for item in list_text:
-        print(item['title'])
-        Text.objects.create(**item)
+    def initial_data(self):
 
+        for category in self.data_from_init['Category']:
+            parent = Category.objects.get(title=category[2]) if category[2] else None
+            print(category[0],category[2],  parent)
+            new_category = Category.objects.create(title=category[0], description=category[1], parent=parent)
+            if parent:
+                parent.add_subcategory(new_category)
+
+        for product in self.data_from_init['Product']:
+            category = Category.objects.get(title=product['category'])
+            product['category']=category
+            Product.objects.create(**product)
+
+        # for new in self.data_from_init['News']:
+        #     New.objects.create(**new)
+
+        pass
+
+    def seed_textts(self):
+        Text.drop_collection()
+
+        for item in self.list_text:
+            print(item['title'])
+            Text.objects.create(**item)
 
 
 if __name__ == '__main__':
-    # init_data = InitialData()
+    init_data = InitialData()
     # init_data.initial_data()
 
-    seed_textts()
+    init_data.seed_textts()

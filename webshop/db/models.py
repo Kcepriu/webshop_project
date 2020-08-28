@@ -54,10 +54,17 @@ class Product(me.Document):
 
 
 class User(me.Document):
+    REQUEST_TELEPHONE = 'request_telephone'
+    REQUEST_NAME = 'request_name'
+    LAST_REQUEST =(
+        (REQUEST_TELEPHONE, 'request_telephone'),
+        (REQUEST_NAME, 'request_name'))
+
     user_id = me.IntField(unique=True, required=True)
-    first_name = me.StringField(min_length=2, max_length=255)
-    last_name = me.StringField(min_length=2, max_length=255)
+    first_name = me.StringField(max_length=255)
+    last_name = me.StringField(max_length=255)
     telephone = me.StringField(min_length=10, max_length=12, regex='^[0-9]*$')
+    las_request = me.StringField(min_length=5, choices=LAST_REQUEST)
 
     @classmethod
     def get_user(cls, chat):
@@ -73,7 +80,7 @@ class User(me.Document):
 class Line_Order(me.EmbeddedDocument):
     product = me.ReferenceField(Product)
     count = me.IntField(min_value=1)
-    summ = me.DecimalField(min_value=1, force_string=True)
+    sum = me.DecimalField(min_value=1, force_string=True)
 
 
 class Order(me.Document):
@@ -91,19 +98,47 @@ class Order(me.Document):
     nom = me.IntField(min_value=1)
     date = me.DateTimeField(default=datetime.now())
     user = me.ReferenceField(User)
+    sum = me.DecimalField(min_value=0, force_string=True, default=0)
     status = me.StringField(min_length=5, choices=STATUS_CONSTANT, default=ORDER_ACTIVE, required=True)
     products = me.EmbeddedDocumentListField(Line_Order)
 
     def get_text_status_order(self):
         if self.status == Order.ORDER_CANCELED:
-            return 'Заказ отменен'
+            return Text.get_body(Text.TEXT_ORDER_CANCELED)
         elif self.status == Order.ORDER_ACTIVE:
-            return 'Заказ редактируется'
+            return Text.get_body(Text.TEXT_ORDER_ACTIVE)
         elif self.status == Order.ORDER_COMPLETED:
-            return 'Заказ выполнен'
+            return Text.get_body(Text.TEXT_ORDER_COMPLETED)
         else:
-            return 'Заказ орабатывается'
+            return Text.get_body(Text.TEXT_ORDER_PROCESSED)
 
+    def add_product_to_order(self, product: Product, count: int):
+        try:
+            line_product = self.products.get(product=product)
+            line_product.count += count
+            line_product.sum = line_product.count*product.actual_price
+        except me.DoesNotExist:
+            self.products.create(product=product, count=count, sum=count*product.actual_price)
+        self.sum = self.get_sum_order()
+        self.save()
+
+    def get_sum_order(self):
+        # Не працює функція сум для такого поля. Мінімум -  працює, по полю кількості - працює, а по сумі ні.
+        # Тулитиму костиль
+        # sums = Order.objects(id=self.id).aggregate([
+        #     {'$unwind': '$products'},
+        #     {'$group': {'_id': '$_id', 'sum_products': {'$sum': '$products.sum'}}}
+        # ])
+        # if sums.alive:
+        #     elem = sums.next()
+        #     print(elem['sum_products'])
+        #     return elem['sum_products']
+        # else:
+        #     return 0
+        total_sum = 0
+        for product in self.products:
+            total_sum += product.sum
+        return total_sum
 
     @classmethod
     def find_active_order(cls, user: User):
@@ -127,16 +162,6 @@ class Order(me.Document):
         if not active_orders:
             active_orders = cls.create_order(user)
         return active_orders
-
-
-    def add_product_to_order(self, product: Product, count: int):
-        try:
-            line_product = self.products.get(product=product)
-            line_product.count += count
-            line_product.summ = line_product.count*product.actual_price
-        except me.DoesNotExist:
-            self.products.create(product=product, count=count, summ=count*product.actual_price)
-        self.save()
 
     @classmethod
     def get_count_products_in_active_order(cls, user):
@@ -173,6 +198,11 @@ class Text(me.Document):
     ORDER = 'order'
     FROM = 'from'
     ORDER_STATUS = 'order_status'
+    SHOW_ORDER = 'show_order'
+    TEXT_ORDER_ACTIVE = 'text_order_active'
+    TEXT_ORDER_PROCESSED = 'text_order_processed'
+    TEXT_ORDER_COMPLETED = 'text_order_completed'
+    TEXT_ORDER_CANCELED = 'text_order_canceled'
 
 
     TITLES_CONSTANT = (
@@ -188,18 +218,19 @@ class Text(me.Document):
         (START_KB_NEWS, 'start_kb news'),
         (GO_TO_CART, 'go_to_cart'),
         (ORDER_HISTORY, 'order_history'),
-
         (ORDER_PROCESSED, 'order_processed'),
         (ORDER_CANCELED, 'order_canceled'),
-
         (CURRENCY, 'currerncy'),
         (PCS, 'pcs'),
         (SUMM_TO_PAY, 'summ_to_pay'),
         (ORDER, 'order'),
         (FROM, 'from'),
-        (ORDER_STATUS, 'order_status')
-
-
+        (ORDER_STATUS, 'order_status'),
+        (SHOW_ORDER, 'show order'),
+        (TEXT_ORDER_ACTIVE, 'text_order_active'),
+        (TEXT_ORDER_PROCESSED, 'text_order_processed'),
+        (TEXT_ORDER_COMPLETED, 'text_order_completed'),
+        (TEXT_ORDER_CANCELED, 'text_order_canceled')
     )
     title = me.StringField(required=True, choices=TITLES_CONSTANT, unique=True)
     body = me.StringField(min_length=2, max_length=4096)
@@ -207,6 +238,7 @@ class Text(me.Document):
     @staticmethod
     def get_body(title_):
         return Text.objects.get(title=title_).body
+
 
 class New(me.Document):
     title = me.StringField(min_length=2, max_length=512, required=True)
