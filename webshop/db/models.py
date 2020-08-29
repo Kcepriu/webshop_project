@@ -1,7 +1,9 @@
 import mongoengine as me
+from mongoengine import ListField
 from mongoengine.queryset.visitor import Q
 from decimal import  Decimal
 from datetime import datetime
+
 
 
 me.connect('webshopdb')
@@ -11,6 +13,9 @@ class Category(me.Document):
     description = me.StringField(min_length=8, max_length=2048)
     subcategories = me.ListField(me.ReferenceField('self'))
     parent = me.ReferenceField('self')
+
+    def __str__(self):
+        return str(self.id)
 
     def get_products(self):
         return Product.objects.filter(category=self)
@@ -42,8 +47,11 @@ class Product(me.Document):
     is_available = me.BooleanField(default=True)
     price = me.DecimalField(min_value=1, force_string=True)
     discount = me.IntField(min_value=0, max_value=99,  default=0)
-    category = me.ReferenceField(Category)
+    category = me.ReferenceField(Category, reverse_delete_rule=me.DENY)
     url_photo = me.StringField(min_length=4, max_length=255)
+
+    def __str__(self):
+        return str(self.id)
 
     @property
     def actual_price(self):
@@ -55,24 +63,19 @@ class Product(me.Document):
 
 
 class User(me.Document):
-    REQUEST_TELEPHONE = 'request_telephone'
-    REQUEST_NAME = 'request_name'
-    LAST_REQUEST =(
-        (REQUEST_TELEPHONE, 'request_telephone'),
-        (REQUEST_NAME, 'request_name'))
-
     user_id = me.IntField(unique=True, required=True)
-    first_name = me.StringField(max_length=255)
-    last_name = me.StringField(max_length=255)
+    name = me.StringField(max_length=255)
     telephone = me.StringField(min_length=10, max_length=12, regex='^[0-9]*$')
-    las_request = me.StringField(min_length=5, choices=LAST_REQUEST)
+
+    def __str__(self):
+        return str(self.id)
 
     @classmethod
     def get_user(cls, chat):
         user = cls.objects(user_id=chat.id)
         if not user:
-            user = cls.objects.create(user_id=chat.id, first_name=chat.first_name if chat.first_name else '' ,
-                                       last_name=chat.last_name if chat.last_name else '')
+            name = chat.last_name + ' ' + chat.first_name
+            user = cls.objects.create(user_id=chat.id, name=name)
         else:
             user = user[0]
         return user
@@ -80,7 +83,7 @@ class User(me.Document):
 
 class Line_Order(me.EmbeddedDocument):
     product = me.ReferenceField(Product)
-    count = me.IntField(min_value=1)
+    count = me.IntField(min_value=1, required=True)
     sum = me.DecimalField(min_value=1, force_string=True)
 
 
@@ -96,12 +99,23 @@ class Order(me.Document):
         (ORDER_ACTIVE, 'order active'),
         (ORDER_PROCESSED, 'order processed')
     )
+
+    REQUEST_TELEPHONE = 'request_telephone'
+    REQUEST_NAME = 'request_name'
+    LAST_REQUEST =(
+        (REQUEST_TELEPHONE, 'request_telephone'),
+        (REQUEST_NAME, 'request_name'))
+
     nom = me.IntField(min_value=1)
     date = me.DateTimeField(default=datetime.now())
     user = me.ReferenceField(User)
     sum = me.DecimalField(min_value=0, force_string=True, default=0)
     status = me.StringField(min_length=5, choices=STATUS_CONSTANT, default=ORDER_ACTIVE, required=True)
     products = me.EmbeddedDocumentListField(Line_Order)
+    name_recipients  = me.StringField(min_length=3, max_length=255)
+    telephone_recipients = me.StringField(min_length=10, max_length=12, regex='^[0-9]*$')
+    last_request = me.StringField(min_length=5, choices=LAST_REQUEST)
+    id_message_cart = me.ListField()
 
     def get_text_status_order(self):
         if self.status == Order.ORDER_CANCELED:
@@ -112,6 +126,22 @@ class Order(me.Document):
             return Text.get_body(Text.TEXT_ORDER_COMPLETED)
         else:
             return Text.get_body(Text.TEXT_ORDER_PROCESSED)
+
+    def add_count_in_line(self, num: int):
+        line_product = self.products[num]
+        line_product.count += 1
+        line_product.sum = line_product.count * line_product.product.actual_price
+        self.sum = self.get_sum_order()
+        self.save()
+
+    def sub_count_in_line(self, num: int):
+        line_product = self.products[num]
+        if line_product.count == 1:
+            return
+        line_product.count -= 1
+        line_product.sum = line_product.count * line_product.product.actual_price
+        self.sum = self.get_sum_order()
+        self.save()
 
     def add_product_to_order(self, product: Product, count: int):
         try:
@@ -144,7 +174,7 @@ class Order(me.Document):
     @classmethod
     def find_active_order(cls, user: User):
         try:
-            order = cls.objects().get(Q(user=user) and Q(status=Order.ORDER_ACTIVE))
+            order = cls.objects().get(Q(user=user) & Q(status=Order.ORDER_ACTIVE))
         except me.DoesNotExist:
             order = None
         return order
@@ -158,7 +188,7 @@ class Order(me.Document):
         return cls.objects.create(user=user, nom=cls.get_count_orders(user)+1)
 
     @classmethod
-    def get_active_order(cls, user: User):
+    def get_active_order(cls, user: User) -> 'Order':
         active_orders = cls.find_active_order(user)
         if not active_orders:
             active_orders = cls.create_order(user)
@@ -166,12 +196,13 @@ class Order(me.Document):
 
     @classmethod
     def get_count_products_in_active_order(cls, user):
-        sums = cls.objects(Q(user=user) and Q(status=Order.ORDER_ACTIVE)).aggregate([
+        sums = cls.objects(Q(user=user) & Q(status=Order.ORDER_ACTIVE)).aggregate([
             {'$unwind': '$products'},
             {'$group': {'_id': '$_id', 'count_products': {'$sum': '$products.count'}}}
             ])
         if sums.alive:
             elem = sums.next()
+            print(elem['count_products'])
             return elem['count_products']
         else:
             return 0
@@ -209,6 +240,9 @@ class Text(me.Document):
     RE_ENTER = 're_enter'
     INCORRECT_PHONE_NUMBER = 'incorrect_phone_number'
     INCORRECN_NAME = 'incorrect_name'
+    ADD_COUNT = 'add_count'
+    SUB_COUNT = 'sub_count'
+    CHANGE_COUNT = 'changed_count'
 
 
     TITLES_CONSTANT = (
@@ -241,7 +275,10 @@ class Text(me.Document):
         (ENTER_LAST_FIST_NAME, 'enter_last_fist_name'),
         (RE_ENTER, 're_enter'),
         (INCORRECT_PHONE_NUMBER, 'incorrect_phone_number'),
-        (INCORRECN_NAME, 'incorrect_name')
+        (INCORRECN_NAME, 'incorrect_name'),
+        (ADD_COUNT, 'add_count'),
+        (SUB_COUNT, 'sub_count'),
+        (CHANGE_COUNT, 'changed_count')
     )
     title = me.StringField(required=True, choices=TITLES_CONSTANT, unique=True)
     body = me.StringField(min_length=2, max_length=4096)

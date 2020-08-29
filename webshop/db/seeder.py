@@ -361,6 +361,18 @@ class InitialData:
         {
             'title': 'incorrect_name',
             'body': 'Ввели не коретные данные'
+        },
+        {
+            'title': 'add_count',
+            'body': 'Увеличить количество'
+        },
+        {
+            'title': 'sub_count',
+            'body': 'Уменьшить количество'
+        },
+        {
+            'title': 'changed_count',
+            'body': 'Изменили количество'
         }
     ]
 

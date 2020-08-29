@@ -1,7 +1,13 @@
 from .config import TOKEN
 from ..db import Category, Product, User, New, Text, Order
 from .keyboards import START_KB
-from .lookups import SEPARATOR, HENDLER_ORDER, HENDLER_CATEGORY, HENDLER_PRODUCT, HENDLER_HISTORY_ORDER
+from .lookups import (SEPARATOR,
+                      HENDLER_ORDER,
+                      HENDLER_CATEGORY,
+                      HENDLER_PRODUCT,
+                      HENDLER_HISTORY_ORDER,
+                      HENDLER_ADD_COUNT_PRODUCT,
+                      HENDLER_SUB_COUNT_PRODUCT)
 from .services import WebShopBot
 
 
@@ -17,39 +23,45 @@ def start(message):
 # Список категорій
 @bot_instance.message_handler(content_types=['text'], func=lambda m: m.text == START_KB['categories'])
 def get_categories(message):
+    bot_instance.clear_messages_from_cart(message.chat)
     bot_instance.generate_and_send_categories_kb(Text.get_body(Text.LIST_CATEGORYS), message.chat.id, Category.get_root_categories())
 
 # Товари із знижкою
 @bot_instance.message_handler(content_types=['text'], func=lambda m: m.text == START_KB['discount'])
 def get_products_with_discount(message):
+    bot_instance.clear_messages_from_cart(message.chat)
     bot_instance.send_products(message.chat.id, Product.get_products_with_discount())
 
 # Вивести новини
 @bot_instance.message_handler(content_types=['text'], func=lambda m: m.text == START_KB['news'])
 def get_news(message):
+    bot_instance.clear_messages_from_cart(message.chat)
     bot_instance.send_news(message.chat.id, New.get_latest_news(3))
 
 # Перейти в корзину
 @bot_instance.message_handler(content_types=['text'], func=lambda m: m.text.find(Text.get_body(Text.GO_TO_CART)) >= 0)
 def go_to_cart(message):
+    bot_instance.clear_messages_from_cart(message.chat)
     bot_instance.send_cart(message)
 
 # Історія заказів
 @bot_instance.message_handler(content_types=['text'], func=lambda m: m.text.find(Text.get_body(Text.ORDER_HISTORY)) >= 0)
 def order_hystory(message):
+    bot_instance.clear_messages_from_cart(message.chat)
     user = User.get_user(chat=message.chat)
     bot_instance.get_history_orders(user)
 
+#Ці перевірки повинні бути останніми
 #Ввели номер телефона
 @bot_instance.message_handler(content_types=['text'],
-                              func=lambda m: User.get_user(chat=m.chat).las_request == User.REQUEST_TELEPHONE)
+            func=lambda m: Order.get_active_order(User.get_user(chat=m.chat)).last_request == Order.REQUEST_TELEPHONE)
 def set_telephone_user(message):
     user = User.get_user(chat=message.chat)
     bot_instance.set_telephone_user(user, message.text)
 
 #Ввели ФІО
 @bot_instance.message_handler(content_types=['text'],
-                              func=lambda m: User.get_user(chat=m.chat).las_request == User.REQUEST_NAME)
+            func=lambda m: Order.get_active_order(User.get_user(chat=m.chat)).last_request == Order.REQUEST_NAME)
 def set_telephone_user(message):
     user = User.get_user(chat=message.chat)
     bot_instance.set_name_user(user, message.text)
@@ -94,6 +106,7 @@ def clic_product(call):
                                                        and call.data.split(SEPARATOR)[2] == Order.ORDER_PROCESSED)
 def order_complete(call):
     order = Order.objects.get(id=call.data.split(SEPARATOR)[1])
+    bot_instance.clear_messages_from_cart(call.message.chat)
     bot_instance.process_order(order, call.message.message_id)
 
 # Клікнули Відмінити замовлення
@@ -101,10 +114,30 @@ def order_complete(call):
                                      and call.data.split(SEPARATOR)[2] == Order.ORDER_CANCELED)
 def order_canceled(call):
     order = Order.objects.get(id=call.data.split(SEPARATOR)[1])
-    bot_instance.next_status_order(order, call.message.message_id, Order.ORDER_CANCELED)
+    bot_instance.clear_messages_from_cart(call.message.chat)
+    bot_instance.next_status_order(order,  Order.ORDER_CANCELED)
 
-#лікнули "Показать заказ"
+# Клікнули "Показать заказ"
 @bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_HISTORY_ORDER)
 def show_order(call):
     order = Order.objects.get(id=call.data.split(SEPARATOR)[1])
     bot_instance.send_order(order)
+
+# Клікнули "Додати кількість"
+@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_ADD_COUNT_PRODUCT)
+def show_order(call):
+    order = Order.objects.get(id=call.data.split(SEPARATOR)[1])
+    bot_instance.update_and_send_line_order(order, order.add_count_in_line, int(call.data.split(SEPARATOR)[2]),
+                                            call.message.message_id)
+
+
+# Клікнули "Зменшити кількість"
+@bot_instance.callback_query_handler(func=lambda call: call.data.split(SEPARATOR)[0] == HENDLER_SUB_COUNT_PRODUCT)
+def show_order(call):
+    order = Order.objects.get(id=call.data.split(SEPARATOR)[1])
+    bot_instance.update_and_send_line_order(order, order.sub_count_in_line, int(call.data.split(SEPARATOR)[2]),
+                                            call.message.message_id)
+
+
+
+
