@@ -11,7 +11,7 @@ class CategorysSchema(Schema):
     id = fields.String(validate=validate.Length(min=24, max=24), dump_only=True)
     title = fields.String(validate=validate.Length(min=2, max=512), required=True)
     description = fields.String(validate=validate.Length(min=8, max=2048))
-    parent = fields.String(validate=validate.Length(min=24, max=24))
+    parent = fields.String(validate=validate.Length(min=0, max=24), allow_none=True)
     subcategories = fields.List(fields.String(validate=validate.Length(min=24, max=24), required=True))
 
 class ParametersSchema(Schema):
@@ -40,8 +40,8 @@ class Line_OrderSchema(Schema):
 
 class OrdersSchema(Schema):
     id = fields.String(validate=validate.Length(min=24, max=24), dump_only=True)
-    nom = fields.Integer(required=True)
-    date = fields.DateTime(required=True)
+    nom = fields.Integer(dump_only=True)
+    date = fields.DateTime()
     user = fields.String(validate=validate.Length(min=24, max=24), required=True)
     sum = fields.Decimal(as_string=True, dump_only=True)
     telephone_recipients = fields.String(validate=validate.Length(min=10, max=12))

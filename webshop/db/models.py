@@ -25,6 +25,12 @@ class Category(me.Document):
         return cls.objects(parent=None)
 
     def add_subcategory(self, subcategory: 'Category'):
+        if subcategory.parent:
+            # Якщо вже є підкатегорією іншого обʼєкта, то треба видалити із списку суькатегорій батька
+            print('remote', subcategory)
+            subcategory.parent.subcategories.remove(subcategory)
+            subcategory.parent.save()
+
         subcategory.parent = self
         subcategory.save()
 
@@ -108,7 +114,7 @@ class Order(me.Document):
 
     nom = me.IntField(min_value=1)
     date = me.DateTimeField(default=datetime.now())
-    user = me.ReferenceField(User)
+    user = me.ReferenceField(User, reverse_delete_rule=me.DENY)
     sum = me.DecimalField(min_value=0, force_string=True, default=0)
     status = me.StringField(min_length=5, choices=STATUS_CONSTANT, default=ORDER_ACTIVE, required=True)
     products = me.EmbeddedDocumentListField(Line_Order)
@@ -180,12 +186,25 @@ class Order(me.Document):
         return order
 
     @classmethod
+    def get_max_num_orders(cls, user: User):
+        max_num = cls.objects(user=user).aggregate([
+            {'$group': {'_id': '$user', 'max_num': {'$max': '$nom'}}}
+        ])
+        if max_num.alive:
+            elem = max_num.next()
+            return elem['max_num']
+        else:
+            return 0
+
+
+
+    @classmethod
     def get_count_orders(cls, user: User):
         return cls.objects(user=user).count()
 
     @classmethod
     def create_order(cls, user: User):
-        return cls.objects.create(user=user, nom=cls.get_count_orders(user)+1)
+        return cls.objects.create(user=user, nom=cls.get_max_num_orders(user)+1)
 
     @classmethod
     def get_active_order(cls, user: User) -> 'Order':
@@ -202,7 +221,6 @@ class Order(me.Document):
             ])
         if sums.alive:
             elem = sums.next()
-            print(elem['count_products'])
             return elem['count_products']
         else:
             return 0
