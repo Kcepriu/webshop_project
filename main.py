@@ -37,8 +37,8 @@ if __name__ == '__main__':
 
     # bot_instance.infinity_polling()
 
-    bot_instance.set_webhook(
-        url=WEBHOOK_URL,
-        certificate=open('webhook_cert.pem', 'r')
-    )
+    # bot_instance.set_webhook(
+    #     url=WEBHOOK_URL,
+    #     certificate=open('webhook_cert.pem', 'r')
+    # )
     app.run(debug=True)
