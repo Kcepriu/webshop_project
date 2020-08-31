@@ -30,15 +30,15 @@ app.register_blueprint(bot_app)
 
 
 if __name__ == '__main__':
-    # bot_instance.remove_webhook()
-    # time.sleep(2)
+    bot_instance.remove_webhook()
+    time.sleep(2)
 
-    bot_instance.polling()
+    # bot_instance.polling()
 
     # bot_instance.infinity_polling()
 
-    # bot_instance.set_webhook(
-    #     url=WEBHOOK_URL,
-    #     certificate=open('webhook_cert.pem', 'r')
-    # )
+    bot_instance.set_webhook(
+        url=WEBHOOK_URL,
+        certificate=open('webhook_cert.pem', 'r')
+    )
     app.run(debug=True)
