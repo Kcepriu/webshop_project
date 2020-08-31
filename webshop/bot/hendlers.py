@@ -13,7 +13,7 @@ from .services import WebShopBot
 
 bot_instance = WebShopBot(TOKEN)
 
-# СТАРТ
+# start
 @bot_instance.message_handler(content_types=['text'], commands=['start'])
 def start(message):
     user = User.get_user(chat=message.chat)
