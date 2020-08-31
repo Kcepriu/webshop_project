@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from .config import TOKEN
 from ..db import Category, Product, User, New, Text, Order
 from .keyboards import START_KB
