@@ -9,7 +9,6 @@ app = Flask(__name__)
 app.register_blueprint(api_app)
 app.register_blueprint(bot_app)
 
-
 if __name__ == '__main__':
     bot_instance.remove_webhook()
     time.sleep(2)

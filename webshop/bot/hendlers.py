@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+import os
 
-from .config import TOKEN
 from ..db import Category, Product, User, New, Text, Order
 from .keyboards import START_KB
 from .lookups import (SEPARATOR,
@@ -13,7 +13,7 @@ from .lookups import (SEPARATOR,
 from .services import WebShopBot
 
 
-bot_instance = WebShopBot(TOKEN)
+bot_instance = WebShopBot(os.environ.get('TOKEN_KEY'))
 
 # start
 @bot_instance.message_handler(content_types=['text'], commands=['start'])
